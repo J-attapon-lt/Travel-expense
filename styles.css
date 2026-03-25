@@ -391,17 +391,21 @@ button {
   .toolbar { position: static; }
 }
 
-@media print {
-  body { background: #fff; }
-  .toolbar, .screen-only { display: none !important; }
-  .pdf-sheet {
-    position: static;
-    left: 0;
-    top: 0;
-    z-index: auto;
-    pointer-events: auto;
-    margin: 0;
-    width: auto;
-    min-height: auto;
-  }
+.pdf-sheet {
+  display: block;
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  width: 210mm;
+  min-height: 297mm;
+  background: #fff;
+  color: #000;
+  margin: 0;
+  padding: 10mm 9mm 8mm;
+  font-family: "Sarabun", "TH Sarabun New", Arial, sans-serif;
+  font-size: 18.5px;
+  line-height: 1.04;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
 }
