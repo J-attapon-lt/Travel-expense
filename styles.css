@@ -269,18 +269,23 @@ button {
   height: 16px;
 }
 
-/* ===== PDF ===== */
+/* PDF render area: ต้อง render ได้ แต่ไม่แสดงบนจอ */
 .pdf-sheet {
-  background: #fff;
-  color: #000;
-  display: none;
+  display: block;
+  position: fixed;
+  left: -99999px;
+  top: 0;
   width: 210mm;
   min-height: 297mm;
-  margin: 0 auto;
+  background: #fff;
+  color: #000;
+  margin: 0;
   padding: 10mm 9mm 8mm;
   font-family: "THSarabun", serif;
   font-size: 18.5px;
   line-height: 1.04;
+  z-index: -1;
+  pointer-events: none;
 }
 
 .pdf-title {
@@ -392,5 +397,14 @@ button {
 @media print {
   body { background: #fff; }
   .toolbar, .screen-only { display: none !important; }
-  .pdf-sheet { display: block !important; margin: 0; padding: 0; width: auto; min-height: auto; }
+  .pdf-sheet {
+    position: static;
+    left: 0;
+    top: 0;
+    z-index: auto;
+    pointer-events: auto;
+    margin: 0;
+    width: auto;
+    min-height: auto;
+  }
 }

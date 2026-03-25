@@ -5,32 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ระบบเบิกค่าใช้จ่ายเดินทางนอกสถานที่</title>
 
-  <!-- ตัวอย่าง CSP ที่ปลอดภัยกว่าเดิม -->
   <meta http-equiv="Content-Security-Policy"
-      content="
-        default-src 'self';
-        script-src 'self' https://cdn.jsdelivr.net;
-        style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
-        font-src 'self' https://cdn.jsdelivr.net data:;
-        img-src 'self' data: blob:;
-        connect-src 'self' https://cdn.jsdelivr.net data:;
-        object-src 'none';
-        base-uri 'self';
-        form-action 'self';
-      ">
+        content="
+          default-src 'self';
+          script-src 'self' https://cdn.jsdelivr.net;
+          style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+          font-src 'self' https://cdn.jsdelivr.net data:;
+          img-src 'self' data: blob:;
+          connect-src 'self' https://cdn.jsdelivr.net data:;
+          object-src 'none';
+          base-uri 'self';
+          form-action 'self';
+        ">
 
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="./styles.css" />
 
   <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <script defer src="app.js"></script>
+  <script defer src="./app.js"></script>
 </head>
 <body>
   <div class="app">
     <div class="toolbar screen-only">
       <div class="toolbar-left">
         <h1>ระบบเบิกค่าใช้จ่ายเดินทางนอกสถานที่</h1>
-        <p>เวอร์ชัน CSP-safe สำหรับ Deploy จริง</p>
+        <p>เวอร์ชัน CSP-safe พร้อม Export PDF</p>
       </div>
       <div class="toolbar-actions">
         <button id="addTripBtn" class="btn-light" type="button">+ เพิ่มรายการเดินทาง</button>
@@ -227,7 +226,7 @@
       </div>
     </div>
 
-    <div id="pdfSheet" class="pdf-sheet"></div>
+    <div id="pdfSheet" class="pdf-sheet" aria-hidden="true"></div>
   </div>
 
   <template id="tripTemplate">

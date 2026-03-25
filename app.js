@@ -85,14 +85,6 @@
     return new Intl.DateTimeFormat("th-TH").format(date);
   }
 
-  function checkbox(checked) {
-    return `<span style="display:inline-block;width:14px;height:14px;border:1px solid #000;vertical-align:middle;text-align:center;line-height:12px;font-size:11px;font-weight:700;">${checked ? "✓" : ""}</span>`;
-  }
-
-  function fill(value, cls = "wide") {
-    return `<span class="pdf-line-fill ${cls}">${escapeHtml(value || "")}</span>`;
-  }
-
   function escapeHtml(value) {
     return String(value)
       .replaceAll("&", "&amp;")
@@ -100,6 +92,14 @@
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
+  }
+
+  function checkbox(checked) {
+    return `<span style="display:inline-block;width:14px;height:14px;border:1px solid #000;vertical-align:middle;text-align:center;line-height:12px;font-size:11px;font-weight:700;">${checked ? "✓" : ""}</span>`;
+  }
+
+  function fill(value, cls = "wide") {
+    return `<span class="pdf-line-fill ${cls}">${escapeHtml(value || "")}</span>`;
   }
 
   function getTripCards() {
@@ -171,8 +171,7 @@
 
   function addTrip(defaultType = "inspection") {
     const node = tripTemplate.content.firstElementChild.cloneNode(true);
-    const typeSelect = node.querySelector(".trip-type");
-    typeSelect.value = defaultType;
+    node.querySelector(".trip-type").value = defaultType;
     bindTripCard(node);
     tripContainer.appendChild(node);
     refreshTripIndexes();
@@ -221,7 +220,6 @@
 
   function buildPDFHtml() {
     const trips = getTripCards().map(getTripData).filter((t) => t.enabled);
-
     const fixedTrips = [0, 1, 2].map((i) => trips[i] || null);
     const meetingTrip = trips.find((t) => t.type === "meeting") || trips[3] || null;
 
@@ -339,9 +337,9 @@
     const lodging = q("autoLodging").checked ? lodgingAuto : num(q("lodging").value);
     const privateVehicle = q("autoPrivateVehicle").checked ? privateAuto : num(q("privateVehicleFuel").value);
 
-    q("allowance").value = q("autoAllowance").checked ? allowance.toFixed(2) : q("allowance").value;
-    q("lodging").value = q("autoLodging").checked ? lodging.toFixed(2) : q("lodging").value;
-    q("privateVehicleFuel").value = q("autoPrivateVehicle").checked ? privateVehicle.toFixed(2) : q("privateVehicleFuel").value;
+    if (q("autoAllowance").checked) q("allowance").value = allowance.toFixed(2);
+    if (q("autoLodging").checked) q("lodging").value = lodging.toFixed(2);
+    if (q("autoPrivateVehicle").checked) q("privateVehicleFuel").value = privateVehicle.toFixed(2);
 
     q("allowance").readOnly = q("autoAllowance").checked;
     q("lodging").readOnly = q("autoLodging").checked;
@@ -366,7 +364,7 @@
   async function exportPDF() {
     syncPDF();
 
-    const element = document.getElementById("pdfSheet");
+    const element = pdfSheet;
     const requester = q("requester").value
       ? q("requester").value.trim().replace(/\s+/g, "_")
       : "travel_expense";
@@ -374,8 +372,13 @@
     const canvas = await window.html2canvas(element, {
       scale: 3,
       useCORS: true,
-      backgroundColor: "#ffffff"
+      backgroundColor: "#ffffff",
+      logging: false
     });
+
+    if (!canvas.width || !canvas.height) {
+      throw new Error("PDF render failed: canvas size is zero");
+    }
 
     const imgData = canvas.toDataURL("image/jpeg", 0.98);
     const { jsPDF } = window.jspdf;
@@ -393,6 +396,10 @@
     const usableHeight = pageHeight - (margin * 2);
     const imgWidth = usableWidth;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    if (!Number.isFinite(imgHeight) || imgHeight <= 0) {
+      throw new Error("PDF render failed: invalid image height");
+    }
 
     let heightLeft = imgHeight;
     let position = margin;
