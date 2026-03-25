@@ -1,0 +1,151 @@
+<!DOCTYPE html><html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travel Expense - Production</title><script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script><style>
+@font-face {
+  font-family: 'THSarabun';
+  src: url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/thsarabunnew-webfont.woff') format('woff');
+}
+
+body {
+  font-family: THSarabun, sans-serif;
+  margin: 0;
+  background:#f5f5f5;
+}
+
+.container {
+  padding:20px;
+}
+
+button{
+  padding:10px 16px;
+  border-radius:8px;
+  border:none;
+  background:#1d4ed8;
+  color:white;
+  cursor:pointer;
+}
+
+input{padding:6px;width:100%;}
+
+/* ===== PDF ===== */
+.pdf {
+  width:210mm;
+  min-height:297mm;
+  margin:auto;
+  background:white;
+  padding:10mm;
+  font-size:18px;
+  line-height:1.05;
+}
+
+.title{text-align:center;font-weight:bold;font-size:20px;}
+.sub{text-align:center;font-size:17px;margin-bottom:4px;}
+.row{margin-bottom:2px;}
+
+.line{
+  display:inline-block;
+  border-bottom:1px dotted black;
+  min-width:120px;
+}
+
+.short{min-width:40px}
+.mid{min-width:80px}
+
+.box{
+  display:inline-block;
+  width:12px;height:12px;
+  border:1px solid black;
+  text-align:center;
+  font-size:10px;
+}
+
+.table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:5px;
+}
+
+.table td,.table th{
+  border:1px solid black;
+  padding:2px;
+}
+
+.sign{
+  margin-top:10px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10mm;
+}
+
+.sign div{text-align:center}
+
+</style></head><body>
+<div class="container">
+  <button onclick="exportPDF()">Export PDF</button>  <div id="pdf" class="pdf"></div>
+</div><script>
+function checkbox(v){return `<span class='box'>${v?'✓':''}</span>`}
+function line(v,cls=''){return `<span class='line ${cls}'>${v||''}</span>`}
+
+function build(){
+return `
+<div class="title">แบบฟอร์มขอเบิกค่าใช้จ่ายในการเดินทางไปปฏิบัติงานนอกสถานที่</div>
+<div class="sub">ตรวจยาง/ขึ้นยาง/ประชุม/สัมมนา/อบรม</div>
+
+<div class="row">1. ข้าพเจ้า ${line('')} พร้อมด้วย ${line('')}</div>
+
+<div class="row">2. ได้รับอนุมัติให้ไปปฏิบัติงาน</div>
+
+<div class="row">2.1 ${checkbox(true)} ตรวจยาง ${checkbox(false)} ขึ้นยาง ${line('สถานที่')}</div>
+<div class="row">&nbsp;&nbsp;&nbsp;เดินทาง ${line('', 'mid')} วันที่ ${line('', 'mid')} เวลา ${line('', 'short')}</div>
+<div class="row">&nbsp;&nbsp;&nbsp;กลับ ${line('', 'mid')} วันที่ ${line('', 'mid')} เวลา ${line('', 'short')} รวม ${line('', 'short')} วัน ${line('', 'short')} ชม.</div>
+
+<div class="row">2.2 ${checkbox(false)} ตรวจยาง ${checkbox(false)} ขึ้นยาง ${line('')}</div>
+<div class="row">2.3 ${checkbox(false)} ตรวจยาง ${checkbox(false)} ขึ้นยาง ${line('')}</div>
+
+<div class="row">2.4 ประชุม ${line('', 'mid')} เรื่อง ${line('', 'mid')}</div>
+
+<div class="row">รวม ${line('', 'short')} วัน ${line('', 'short')} ชม.</div>
+
+<div class="row">3. ค่าใช้จ่าย</div>
+
+<table class="table">
+<tr><th>ลำดับ</th><th>รายการ</th><th>เงิน</th></tr>
+<tr><td>3.1</td><td>ค่าเบี้ยเลี้ยง</td><td></td></tr>
+<tr><td>3.2</td><td>ค่าอาหาร</td><td></td></tr>
+<tr><td>3.3</td><td>ค่าที่พัก</td><td></td></tr>
+<tr><td>3.4</td><td>รถบริษัท</td><td></td></tr>
+<tr><td>3.5</td><td>รถสาธารณะ</td><td></td></tr>
+<tr><td>3.6</td><td>รถส่วนตัว</td><td></td></tr>
+<tr><td>3.7</td><td>อื่นๆ</td><td></td></tr>
+</table>
+
+<div class="row">รวมเป็นเงิน (ตัวอักษร) ${line('', 'mid')}</div>
+
+<div class="row">แนบเอกสาร ${line('', 'short')} ฉบับ</div>
+
+<div class="sign">
+<div>ลงชื่อ.........................ผู้ขอ</div>
+<div>ลงชื่อ.........................ผู้อนุมัติ</div>
+<div>ลงชื่อ.........................ผู้จ่าย</div>
+<div>ลงชื่อ.........................ผู้รับ</div>
+</div>
+
+<div style="text-align:right;margin-top:6px;font-size:14px">HR-016</div>
+`}
+
+function exportPDF(){
+  document.getElementById('pdf').innerHTML = build();
+
+  html2pdf().set({
+    margin: 4,
+    filename: 'travel.pdf',
+    html2canvas:{scale:4},
+    jsPDF:{unit:'mm',format:'a4'}
+  }).from(document.getElementById('pdf')).save();
+}
+
+build();
+</script></body>
+</html>
