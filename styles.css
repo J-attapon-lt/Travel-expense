@@ -1,7 +1,3 @@
-@font-face {
-  font-family: "THSarabun";
-  src: url("https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/thsarabunnew-webfont.woff") format("woff");
-}
 
 :root {
   --bg: #f5f7fb;
@@ -19,7 +15,7 @@
 
 body {
   margin: 0;
-  font-family: "THSarabun", sans-serif;
+  font-family: "Sarabun", "TH Sarabun New", Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
 }
@@ -273,19 +269,16 @@ button {
 .pdf-sheet {
   display: block;
   position: fixed;
-  left: -99999px;
+  left: -10000px;
   top: 0;
   width: 210mm;
   min-height: 297mm;
   background: #fff;
   color: #000;
-  margin: 0;
   padding: 10mm 9mm 8mm;
-  font-family: "THSarabun", serif;
-  font-size: 18.5px;
-  line-height: 1.04;
   z-index: -1;
   pointer-events: none;
+  overflow: hidden;
 }
 
 .pdf-title {
