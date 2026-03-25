@@ -361,72 +361,71 @@
     syncPDF();
   }
 
-async function exportPDF() {
-  syncPDF();
+  async function exportPDF() {
+    syncPDF();
 
-  const element = pdfSheet;
-  const requester = q("requester").value
-    ? q("requester").value.trim().replace(/\s+/g, "_")
-    : "travel_expense";
+    const element = pdfSheet;
+    const requester = q("requester").value
+      ? q("requester").value.trim().replace(/\s+/g, "_")
+      : "travel_expense";
 
-  const rect = element.getBoundingClientRect();
-  if (!rect.width || !rect.height) {
-    throw new Error("PDF render failed: pdfSheet has zero size");
-  }
+    const rect = element.getBoundingClientRect();
+    if (!rect.width || !rect.height) {
+      throw new Error("PDF render failed: pdfSheet has zero size");
+    }
 
-  const canvas = await window.html2canvas(element, {
-    scale: 2,
-    useCORS: true,
-    backgroundColor: "#ffffff",
-    logging: false
-  });
+    const canvas = await window.html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      logging: false
+    });
 
-  if (!canvas.width || !canvas.height) {
-    throw new Error("PDF render failed: canvas size is zero");
-  }
+    if (!canvas.width || !canvas.height) {
+      throw new Error("PDF render failed: canvas size is zero");
+    }
 
-  const imgData = canvas.toDataURL("image/jpeg", 0.98);
-  const { jsPDF } = window.jspdf;
+    const imgData = canvas.toDataURL("image/jpeg", 0.98);
+    const { jsPDF } = window.jspdf;
 
-  const pdf = new jsPDF({
-    orientation: "portrait",
-    unit: "mm",
-    format: "a4"
-  });
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4"
+    });
 
-  const pageWidth = 210;
-  const pageHeight = 297;
-  const margin = 4;
+    const pageWidth = 210;
+    const pageHeight = 297;
+    const margin = 4;
+    const usableWidth = pageWidth - (margin * 2);
+    const usableHeight = pageHeight - (margin * 2);
 
-  const usableWidth = pageWidth - (margin * 2);
-  const usableHeight = pageHeight - (margin * 2);
+    const imgWidth = usableWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-  const imgWidth = usableWidth;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    if (!Number.isFinite(imgWidth) || !Number.isFinite(imgHeight) || imgWidth <= 0 || imgHeight <= 0) {
+      throw new Error(`PDF render failed: invalid image size ${imgWidth} x ${imgHeight}`);
+    }
 
-  if (!Number.isFinite(imgWidth) || !Number.isFinite(imgHeight) || imgWidth <= 0 || imgHeight <= 0) {
-    throw new Error(`PDF render failed: invalid image size ${imgWidth} x ${imgHeight}`);
-  }
+    if (imgHeight <= usableHeight) {
+      pdf.addImage(imgData, "JPEG", margin, margin, imgWidth, imgHeight);
+    } else {
+      let heightLeft = imgHeight;
+      let position = margin;
 
-  if (imgHeight <= usableHeight) {
-    pdf.addImage(imgData, "JPEG", margin, margin, imgWidth, imgHeight);
-  } else {
-    let heightLeft = imgHeight;
-    let position = margin;
-
-    pdf.addImage(imgData, "JPEG", margin, position, imgWidth, imgHeight);
-    heightLeft -= usableHeight;
-
-    while (heightLeft > 0) {
-      position = margin - (imgHeight - heightLeft);
-      pdf.addPage();
       pdf.addImage(imgData, "JPEG", margin, position, imgWidth, imgHeight);
       heightLeft -= usableHeight;
-    }
-  }
 
-  pdf.save(`${requester}_travel_expense.pdf`);
-}
+      while (heightLeft > 0) {
+        position = margin - (imgHeight - heightLeft);
+        pdf.addPage();
+        pdf.addImage(imgData, "JPEG", margin, position, imgWidth, imgHeight);
+        heightLeft -= usableHeight;
+      }
+    }
+
+    pdf.save(`${requester}_travel_expense.pdf`);
+  }
 
   function initGlobalBindings() {
     q("addTripBtn").addEventListener("click", () => addTrip("inspection"));

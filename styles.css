@@ -1,4 +1,3 @@
-
 :root {
   --bg: #f5f7fb;
   --card: #ffffff;
@@ -159,6 +158,7 @@ button {
   font-size: 14px;
   background: #fff;
   outline: none;
+  font-family: inherit;
 }
 
 .summary-item {
@@ -265,7 +265,7 @@ button {
   height: 16px;
 }
 
-/* PDF render area: ต้อง render ได้ แต่ไม่แสดงบนจอ */
+/* PDF render area */
 .pdf-sheet {
   display: block;
   position: fixed;
@@ -275,7 +275,11 @@ button {
   min-height: 297mm;
   background: #fff;
   color: #000;
+  margin: 0;
   padding: 10mm 9mm 8mm;
+  font-family: "Sarabun", "TH Sarabun New", Arial, sans-serif;
+  font-size: 18.5px;
+  line-height: 1.04;
   z-index: -1;
   pointer-events: none;
   overflow: hidden;
