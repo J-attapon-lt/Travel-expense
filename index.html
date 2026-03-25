@@ -1,0 +1,774 @@
+<!DOCTYPE html><html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ระบบเบิกค่าใช้จ่ายเดินทางนอกสถานที่</title>
+  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --line: #d7deea;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #1d4ed8;
+      --primary-dark: #1e3a8a;
+      --accent: #eff6ff;
+      --danger: #dc2626;
+    }* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "TH Sarabun New", "Sarabun", "Segoe UI", Tahoma, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(245, 247, 251, 0.95);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0 18px;
+}
+
+.toolbar-left h1 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.3;
+  font-family: "Sarabun", "Segoe UI", sans-serif;
+}
+
+.toolbar-left p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-family: "Sarabun", "Segoe UI", sans-serif;
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+button {
+  border: 0;
+  border-radius: 14px;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: .2s ease;
+  font-family: "Sarabun", "Segoe UI", sans-serif;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover { background: var(--primary-dark); }
+
+.btn-light {
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+
+.btn-danger {
+  background: #fff;
+  border: 1px solid #fecaca;
+  color: var(--danger);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+}
+
+.card-header {
+  padding: 20px 22px 0;
+}
+
+.card-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  font-family: "Sarabun", "Segoe UI", sans-serif;
+}
+
+.card-subtitle {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-family: "Sarabun", "Segoe UI", sans-serif;
+}
+
+.card-body {
+  padding: 20px 22px 22px;
+}
+
+.top-fields,
+.signature-grid,
+.trip-grid,
+.expense-grid,
+.rate-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.top-fields,
+.signature-grid,
+.trip-grid,
+.rate-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.expense-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: "Sarabun", "Segoe UI", sans-serif;
+}
+
+.field label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 14px;
+  background: #fff;
+  outline: none;
+  font-family: "Sarabun", "Segoe UI", sans-serif;
+}
+
+.field textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
+}
+
+.section-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.summary-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 90px;
+}
+
+.summary-item {
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: #fff;
+  font-family: "Sarabun", "Segoe UI", sans-serif;
+}
+
+.summary-item small {
+  display: block;
+  color: var(--muted);
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.summary-item strong {
+  font-size: 22px;
+  line-height: 1.4;
+}
+
+.trip-card {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px;
+  background: #fff;
+}
+
+.trip-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  font-family: "Sarabun", "Segoe UI", sans-serif;
+}
+
+.trip-head-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.trip-badge {
+  padding: 8px 12px;
+  background: var(--accent);
+  color: var(--primary-dark);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: "Sarabun", "Segoe UI", sans-serif;
+}
+
+.line {
+  height: 1px;
+  background: var(--line);
+  margin: 16px 0;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  font-family: "Sarabun", "Segoe UI", sans-serif;
+}
+
+.expense-row {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  background: #fff;
+  font-family: "Sarabun", "Segoe UI", sans-serif;
+}
+
+.expense-row h4 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-family: "Sarabun", "Segoe UI", sans-serif;
+}
+
+.expense-row p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-family: "Sarabun", "Segoe UI", sans-serif;
+}
+
+.total-box {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: #fff;
+  border-radius: 20px;
+  padding: 20px;
+  font-family: "Sarabun", "Segoe UI", sans-serif;
+}
+
+.total-box .money {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 8px 0;
+}
+
+.pdf-sheet {
+  background: #fff;
+  color: #000;
+  margin-top: 20px;
+  padding: 14mm 12mm 10mm;
+  border-radius: 12px;
+  display: none;
+  width: 210mm;
+  min-height: 297mm;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: "TH Sarabun New", "Sarabun", serif;
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+.pdf-title {
+  text-align: center;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.pdf-sub {
+  text-align: center;
+  font-size: 18px;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.pdf-row {
+  margin-bottom: 4px;
+  line-height: 1.15;
+  font-size: 20px;
+}
+
+.pdf-row.compact {
+  margin-bottom: 1px;
+}
+
+.pdf-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 19px;
+}
+
+.pdf-table th,
+.pdf-table td {
+  border: 1px solid #000;
+  padding: 3px 5px;
+  vertical-align: top;
+  line-height: 1.1;
+  font-weight: normal;
+}
+
+.pdf-table th {
+  text-align: center;
+  font-weight: 700;
+}
+
+.pdf-sign-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10mm 14mm;
+  margin-top: 10px;
+  font-size: 20px;
+}
+
+.pdf-sign-box {
+  min-height: 54px;
+  line-height: 1.18;
+}
+
+.pdf-rates {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 18px;
+}
+
+.pdf-rates th,
+.pdf-rates td {
+  border: 1px solid #000;
+  padding: 3px 4px;
+  text-align: center;
+  line-height: 1.1;
+  font-weight: normal;
+}
+
+.pdf-rates th {
+  font-weight: 700;
+}
+
+.pdf-note {
+  margin-top: 5px;
+  font-size: 18px;
+  text-align: right;
+}
+
+.pdf-line-fill {
+  display: inline-block;
+  min-width: 40px;
+  border-bottom: 1px dotted #000;
+  line-height: 1;
+  padding: 0 2px;
+  text-align: center;
+}
+
+.pdf-line-fill.wide { min-width: 220px; }
+.pdf-line-fill.mid { min-width: 130px; }
+.pdf-line-fill.short { min-width: 60px; }
+
+.muted { color: var(--muted); }
+.full { grid-column: 1 / -1; }
+
+@page {
+  size: A4 portrait;
+  margin: 8mm;
+}
+
+@media (max-width: 1100px) {
+  .grid { grid-template-columns: 1fr; }
+  .summary-stack { position: static; }
+}
+
+@media (max-width: 760px) {
+  .app { padding: 14px; }
+  .top-fields,
+  .signature-grid,
+  .trip-grid,
+  .expense-grid,
+  .rate-grid,
+  .pdf-sign-grid { grid-template-columns: 1fr; }
+  .toolbar { position: static; }
+}
+
+@media print {
+  body { background: #fff; }
+  .toolbar, .screen-only { display: none !important; }
+  .pdf-sheet { display: block !important; margin: 0; padding: 0; width: auto; min-height: auto; }
+}
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="toolbar screen-only">
+      <div class="toolbar-left">
+        <h1>ระบบเบิกค่าใช้จ่ายเดินทางนอกสถานที่</h1>
+        <p>HTML พร้อมปุ่ม Export PDF ตามฟอร์มเอกสารต้นฉบับ</p>
+      </div>
+      <div class="toolbar-actions">
+        <button class="btn-light" onclick="addTrip()">+ เพิ่มรายการเดินทาง</button>
+        <button class="btn-primary" onclick="exportPDF()">Export PDF</button>
+      </div>
+    </div><div class="grid screen-only">
+  <div class="section-stack">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">ข้อมูลผู้ขอเบิก</h2>
+        <p class="card-subtitle">กรอกข้อมูลตามแบบฟอร์มเบิกค่าใช้จ่ายในการเดินทางไปปฏิบัติงานนอกสถานที่</p>
+      </div>
+      <div class="card-body">
+        <div class="top-fields">
+          <div class="field">
+            <label>1. ข้าพเจ้า นาย/นาง/นางสาว</label>
+            <input id="requester" placeholder="ชื่อผู้ขอเบิก" oninput="syncPDF()" />
+          </div>
+          <div class="field">
+            <label>พร้อมด้วย นาย/นาง/นางสาว</label>
+            <input id="companion" placeholder="ผู้ร่วมเดินทาง" oninput="syncPDF()" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">2. รายละเอียดการเดินทาง / ปฏิบัติงาน</h2>
+        <p class="card-subtitle">รองรับหลายรายการ เช่น ตรวจงาน ขึ้นยาง ประชุม สัมมนา อบรม และอื่นๆ</p>
+      </div>
+      <div class="card-body">
+        <div id="tripContainer"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">3. รายการค่าใช้จ่าย</h2>
+      </div>
+      <div class="card-body">
+        <div class="expense-grid">
+          <div class="expense-row">
+            <h4>3.1 ค่าเบี้ยเลี้ยง</h4>
+            <div class="checkbox-row">
+              <input type="checkbox" id="autoAllowance" checked onchange="recalculate()" />
+              <label for="autoAllowance">คำนวณอัตโนมัติ</label>
+            </div>
+            <div class="field" style="margin-top:10px;">
+              <input id="allowance" type="number" placeholder="0.00" oninput="recalculate()" />
+            </div>
+            <p>3-6 ชม. = 100 บาท, 6-8 ชม. = 150 บาท, 8-12 ชม. = 200 บาท, เกิน 12 ชม. = 300 บาท</p>
+          </div>
+
+          <div class="expense-row">
+            <h4>3.2 ค่าอาหารในการเข้าร่วมประชุมสัมมนา</h4>
+            <div class="field">
+              <input id="meetingFee" type="number" placeholder="0.00" oninput="recalculate()" />
+            </div>
+          </div>
+
+          <div class="expense-row">
+            <h4>3.3 ค่าที่พักแบบประหยัด</h4>
+            <div class="checkbox-row">
+              <input type="checkbox" id="autoLodging" onchange="recalculate()" />
+              <label for="autoLodging">คำนวณอัตโนมัติ</label>
+            </div>
+            <div class="expense-grid" style="margin-top:10px;">
+              <div class="field">
+                <label>จำนวนคืน</label>
+                <input id="lodgingNights" type="number" placeholder="1" oninput="recalculate()" />
+              </div>
+              <div class="field">
+                <label>ยอดเงิน</label>
+                <input id="lodging" type="number" placeholder="0.00" oninput="recalculate()" />
+              </div>
+            </div>
+            <p>อัตราค่าที่พักวันละ 700 บาท</p>
+          </div>
+
+          <div class="expense-row">
+            <h4>3.4 ค่าพาหนะ / ค่าน้ำมันเชื้อเพลิง (กรณีใช้รถบริษัท)</h4>
+            <div class="field">
+              <input id="companyVehicleFuel" type="number" placeholder="0.00" oninput="recalculate()" />
+            </div>
+          </div>
+
+          <div class="expense-row">
+            <h4>3.5 ค่าพาหนะ (กรณีเดินทางโดยรถสาธารณะ)</h4>
+            <div class="field">
+              <input id="publicTransport" type="number" placeholder="0.00" oninput="recalculate()" />
+            </div>
+          </div>
+
+          <div class="expense-row">
+            <h4>3.6 ค่าพาหนะ / ค่าน้ำมันเชื้อเพลิง (รถยนต์ส่วนบุคคล)</h4>
+            <div class="checkbox-row">
+              <input type="checkbox" id="autoPrivateVehicle" onchange="recalculate()" />
+              <label for="autoPrivateVehicle">คำนวณอัตโนมัติ</label>
+            </div>
+            <div class="expense-grid" style="margin-top:10px;">
+              <div class="field">
+                <label>ระยะทาง (กม.)</label>
+                <input id="privateDistanceKm" type="number" placeholder="0" oninput="recalculate()" />
+              </div>
+              <div class="field">
+                <label>ยอดเงิน</label>
+                <input id="privateVehicleFuel" type="number" placeholder="0.00" oninput="recalculate()" />
+              </div>
+            </div>
+            <p>0-80 กม. = 6.09 บาท/กม., 81 กม. ขึ้นไป = 4.06 บาท/กม.</p>
+          </div>
+
+          <div class="expense-row">
+            <h4>3.7 อื่นๆ</h4>
+            <div class="expense-grid">
+              <div class="field">
+                <label>รายการ</label>
+                <input id="otherLabel" placeholder="ระบุรายการ" oninput="recalculate()" />
+              </div>
+              <div class="field">
+                <label>ยอดเงิน</label>
+                <input id="otherAmount" type="number" placeholder="0.00" oninput="recalculate()" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">เอกสารประกอบ / ลงชื่อ</h2>
+      </div>
+      <div class="card-body">
+        <div class="top-fields">
+          <div class="field">
+            <label>จำนวนหลักฐานการเบิกจ่าย</label>
+            <input id="attachmentsCount" placeholder="จำนวน ... ฉบับ" oninput="syncPDF()" />
+          </div>
+          <div class="field">
+            <label>หมายเหตุ</label>
+            <input id="remarks" placeholder="หมายเหตุเพิ่มเติม" oninput="syncPDF()" />
+          </div>
+        </div>
+        <div style="height:16px"></div>
+        <div class="signature-grid">
+          <div class="field">
+            <label>ผู้ขอเบิกจ่าย</label>
+            <input id="claimerName" placeholder="ชื่อผู้ขอเบิกจ่าย" oninput="syncPDF()" />
+            <input id="claimerDate" type="date" oninput="syncPDF()" />
+          </div>
+          <div class="field">
+            <label>ผู้อนุมัติ</label>
+            <input id="approverName" placeholder="ชื่อผู้อนุมัติ" oninput="syncPDF()" />
+            <input id="approverDate" type="date" oninput="syncPDF()" />
+          </div>
+          <div class="field">
+            <label>ผู้จ่ายเงิน</label>
+            <input id="payeeName" placeholder="ชื่อผู้จ่ายเงิน" oninput="syncPDF()" />
+            <input id="payeeDate" type="date" oninput="syncPDF()" />
+          </div>
+          <div class="field">
+            <label>ผู้รับเงิน</label>
+            <input id="receiverName" placeholder="ชื่อผู้รับเงิน" oninput="syncPDF()" />
+            <input id="receiverDate" type="date" oninput="syncPDF()" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">อัตราอ้างอิง</h2>
+      </div>
+      <div class="card-body">
+        <div class="rate-grid">
+          <div class="summary-item">
+            <small>ค่าเบี้ยเลี้ยง</small>
+            <div>3-6 ชม. = 100 บาท</div>
+            <div>6-8 ชม. = 150 บาท</div>
+            <div>8-12 ชม. = 200 บาท</div>
+            <div>เกิน 12 ชม. = 300 บาท</div>
+          </div>
+          <div class="summary-item">
+            <small>รถยนต์ส่วนบุคคล</small>
+            <div>0-80 กม. = 6.09 บาท/กม.</div>
+            <div>81 กม. ต่อไป = 4.06 บาท/กม.</div>
+            <div style="margin-top:8px;"><small>ค่าที่พัก</small>วันละ 700 บาท</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="summary-stack">
+    <div class="summary-item">
+      <small>รวมชั่วโมงปฏิบัติงาน</small>
+      <strong id="sumHours">0 ชม.</strong>
+    </div>
+    <div class="summary-item">
+      <small>รวมวันปฏิบัติงาน</small>
+      <strong id="sumDays">0 วัน</strong>
+    </div>
+    <div class="summary-item">
+      <small>รวมเป็นเงิน</small>
+      <strong id="sumMoney">฿0.00</strong>
+    </div>
+    <div class="total-box">
+      <div>รวมเป็นเงิน (ตัวอักษร)</div>
+      <div class="money" id="thaiText">ศูนย์บาทถ้วน</div>
+    </div>
+  </div>
+</div>
+
+<div id="pdfSheet" class="pdf-sheet"></div>
+
+  </div>  <template id="tripTemplate">
+    <div class="trip-card">
+      <div class="trip-head">
+        <div class="trip-head-left">
+          <span class="trip-badge trip-index">รายการที่ 1</span>
+          <label class="checkbox-row"><input type="checkbox" class="trip-enabled" checked onchange="recalculate()"> ใช้รายการนี้</label>
+        </div>
+        <button class="btn-danger" type="button">ลบรายการ</button>
+      </div>
+      <div class="trip-grid">
+        <div class="field">
+          <label>ประเภทภารกิจ</label>
+          <select class="trip-type" onchange="toggleMeetingFields(this); syncPDF();">
+            <option value="inspection">ตรวจงาน / ขึ้นยาง</option>
+            <option value="meeting">ประชุม / สัมมนา / อบรม / อื่นๆ</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>ลักษณะงาน</label>
+          <select class="trip-jobType" oninput="syncPDF()">
+            <option>ตรวจงาน</option>
+            <option>ขึ้นยาง</option>
+            <option>อื่นๆ</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>สถานที่ปฏิบัติงาน</label>
+          <input class="trip-place" placeholder="สถานที่" oninput="syncPDF()" />
+        </div>
+        <div class="field">
+          <label>อำเภอ / จังหวัด</label>
+          <input class="trip-districtProvince" placeholder="อำเภอ / จังหวัด" oninput="syncPDF()" />
+        </div>
+        <div class="field full meeting-only" style="display:none;">
+          <label>เรื่อง / วัตถุประสงค์</label>
+          <input class="trip-topic" placeholder="เรื่อง / ระบุรายละเอียด" oninput="syncPDF()" />
+        </div>
+      </div>
+      <div class="line"></div>
+      <div class="trip-grid">
+        <div class="field">
+          <label>ออกเดินทางจาก</label>
+          <select class="trip-departFrom" oninput="syncPDF()">
+            <option>บริษัท</option>
+            <option>บ้านพัก</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>วันที่ออกเดินทาง</label>
+          <input class="trip-departDate" type="date" oninput="recalculate()" />
+        </div>
+        <div class="field">
+          <label>เวลาออกเดินทาง</label>
+          <input class="trip-departTime" type="time" oninput="recalculate()" />
+        </div>
+        <div class="field">
+          <label>กลับถึง</label>
+          <select class="trip-returnTo" oninput="syncPDF()">
+            <option>บริษัท</option>
+            <option>บ้านพัก</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>วันที่กลับถึง</label>
+          <input class="trip-returnDate" type="date" oninput="recalculate()" />
+        </div>
+        <div class="field">
+          <label>เวลากลับถึง</label>
+          <input class="trip-returnTime" type="time" oninput="recalculate()" />
+        </div>
+        <div class="field">
+          <label>รวมชั่วโมงปฏิบัติงาน</label>
+          <input class="trip-hours" type="number" step="0.1" placeholder="ปล่อยว่างเพื่อคำนวณอัตโนมัติ" oninput="recalculate()" />
+        </div>
+        <div class="field">
+          <label>รวมวันปฏิบัติงาน</label>
+          <input class="trip-days" type="number" step="1" placeholder="0" oninput="recalculate()" />
+        </div>
+      </div>
+    </div>
+  </template>  <script>
+    const tripContainer = document.getElementById('tripContainer');
+    const pdfSheet = document.getElementById('pdfSheet');
+
+    function q(id) {
+      return document.getElementById(id);
+    }
+
+    function num(v) {
+      const n = parseFloat(v);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function money(v) {
+      return new Intl.NumberFormat('th-TH', {
+        style: 'currency',
+        currency: 'THB',
+        minimumFr
